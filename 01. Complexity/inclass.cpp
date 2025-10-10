@@ -28,9 +28,13 @@ int sum(int n) {
   return s;
 }
 
-// TODO: push_back
+// push_back - amortised O(1)
 
-// binary search - )(log(n))
+// min/max element - O(n)
+
+// linear search - best case: O(1), worst case: O(n)
+
+// binary search - O(log(n))
 int binarySearch(std::vector<int> const &v, int target) {
   int left = 0, right = v.size()-1, mid;
   while (left >= right) {
@@ -82,7 +86,7 @@ void insertionSort(std::vector<int> &v) {
   }
 }
 
-// quick sort - O(n*log(n))
+// quick sort - best and average case: O(n*log(n)), worst case: O(n^2)
 int partition(std::vector<int> &v, int low, int high) {
   int pivot = v[high];
   int i = low;
@@ -109,12 +113,60 @@ void quicksort(std::vector<int> &v) {
   quicksort(v, 0, v.size()-1);
 }
 
-// TODO: merge sort
+// merge sort - O(n*log(n))
+void merge(std::vector<int> &v, int low, int mid, int high) {
+  int s1 = mid - low + 1;
+  int s2 = high - mid;
+
+  std::vector<int> v1(s1), v2(s2);
+
+  for (int i = 0; i < s1; ++i) {
+    v1[i] = v[low+i];
+  }
+
+  for (int i = 0; i < s2; ++i) {
+    v2[i] = v[mid+1+i];
+  }
+
+  int i = 0, j = 0, k = low;
+  while (i < s1 && j < s2) {
+    if (v1[i] <= v2[j]) {
+      v[k] = v1[i];
+      i++;
+    }
+    else {
+      v[k] = v2[j];
+      j++;
+    }
+    k++;
+  }
+
+  while (i < s1) {
+    v[k++] = v1[i++];
+  }
+
+  while (j < s2) {
+    v[k++] = v2[j++];
+  }
+}
+
+void mergesort(std::vector<int> &v, int low, int high) {
+  if (low>=high) return;
+
+  int mid = low + (high - low) / 2;
+  mergesort(v, low, mid);
+  mergesort(v, mid+1, high);
+  merge(v, low, mid, high);
+}
+
+void mergesort(std::vector<int> &v) {
+  mergesort(v, 0, v.size()-1);
+}
 
 int main() {
 
   std::vector<int> v{4,3,1,2};
-  bubbleSort(v);
+  mergesort(v);
 
   for (int el : v)
     std::cout << el << ' ';
