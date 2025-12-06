@@ -22,45 +22,50 @@ public:
 
   position root() const { return position(m_root); }
 
-  void addLeftSubtree(position treePos, BinaryTree const &subtree) {
-    if (!treePos.valid())
-      throw std::runtime_error("invalid position");
+  // тези ги закоментирахме, защото BST наследява този клас ;)
+  // поведението им е лесно за симулация чрез конструкторите
+  // BinaryTree(T const &, BinaryTree const &, BinaryTree const &) и
+  // BinaryTree(T const &, BinaryTree &&, BinaryTree &&)
 
-    if (treePos.left().valid()) {
-      free(treePos.pos->left);
-    }
-    treePos.pos->left = copy(subtree.m_root);
-  }
+  // void addLeftSubtree(position treePos, BinaryTree const &subtree) {
+    // if (!treePos.valid())
+      // throw std::runtime_error("invalid position");
 
-  void addLeftSubtree(position treePos, BinaryTree &&subtree) {
-    if (!treePos.valid())
-      throw std::runtime_error("invalid position");
+    // if (treePos.left().valid()) {
+      // free(treePos.pos->left);
+    // }
+    // treePos.pos->left = copy(subtree.m_root);
+  // }
 
-    if (treePos.left().valid()) {
-      free(treePos.pos->left);
-    }
-    treePos.pos->left = std::exchange(subtree.m_root, nullptr);
-  }
+  // void addLeftSubtree(position treePos, BinaryTree &&subtree) {
+    // if (!treePos.valid())
+      // throw std::runtime_error("invalid position");
 
-  void addRightSubtree(position treePos, BinaryTree const &subtree) {
-    if (!treePos.valid())
-      throw std::runtime_error("invalid position");
+    // if (treePos.left().valid()) {
+      // free(treePos.pos->left);
+    // }
+    // treePos.pos->left = std::exchange(subtree.m_root, nullptr);
+  // }
 
-    if (treePos.right().valid()) {
-      free(treePos.pos->right);
-    }
-    treePos.pos->right = copy(subtree.m_root);
-  }
+  // void addRightSubtree(position treePos, BinaryTree const &subtree) {
+    // if (!treePos.valid())
+      // throw std::runtime_error("invalid position");
 
-  void addRightSubtree(position treePos, BinaryTree &&subtree) {
-    if (!treePos.valid())
-      throw std::runtime_error("invalid position");
+    // if (treePos.right().valid()) {
+      // free(treePos.pos->right);
+    // }
+    // treePos.pos->right = copy(subtree.m_root);
+  // }
 
-    if (treePos.right().valid()) {
-      free(treePos.pos->right);
-    }
-    treePos.pos->right = std::exchange(subtree.m_root, nullptr);
-  }
+  // void addRightSubtree(position treePos, BinaryTree &&subtree) {
+    // if (!treePos.valid())
+      // throw std::runtime_error("invalid position");
+
+    // if (treePos.right().valid()) {
+      // free(treePos.pos->right);
+    // }
+    // treePos.pos->right = std::exchange(subtree.m_root, nullptr);
+  // }
 
 public:
   BinaryTree() : m_root(nullptr) {}
@@ -224,8 +229,12 @@ private:
     pos = nullptr;
   }
 
-private:
+protected:
   Node *m_root;
+
+  // типов синоним за типа Node, който е в protected секция,
+  // понеже така няма нужда да правим целия Node клас protected
+  using BTNode = Node;
 };
 
 #endif // __BINARY_TREE_HPP
