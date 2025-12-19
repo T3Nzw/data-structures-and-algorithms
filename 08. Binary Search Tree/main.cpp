@@ -1,14 +1,128 @@
 #include <climits>
+#include <functional>
 #include <iostream>
+#include <optional>
 #include <string>
 #include <vector>
 #include "BinarySearchTree.hpp"
 #include "../07. Binary Tree/BinaryTreeUtil.hpp"
 
-// задачи 07 и 08 остават за вас :)
-// честно казано, бих искала да ги покажем
-// на семинар, понеже са доста интересни :(
-// но това ако остане време...
+// k-ти най-голям елемент в двоично наредено дърво.
+// както казахме, друг вариант е да вземем инфиксното
+// обхождане на дървото във вектор vec,
+// да сумираме елементите на индекси
+// 0,1,..,k и към тази сума да добавяме елементите от
+// индекс i=k+1,...,vec.size()-1 нататък, докато vec[k] == vec[i].
+
+// подаваме k по референция, за да можем да го "споделяме" измежду
+// различните рекурсивни извиквания, тъй като няма да искаме да го променяме
+// в дълбочина, а когато се връщаме назад по рекурсивните извиквания
+std::optional<int> kthLargest(unsigned &k, BST<int, bool>::position pos) {
+  if (!pos.valid() || k == 0)
+    return std::nullopt;
+
+  std::optional<int> lres = kthLargest(k, pos.left());
+  if (lres.has_value()) {
+    return lres;
+  }
+
+  k--;
+  if (k == 0) {
+    return std::optional<int>{ (*pos).first };
+  }
+
+  return kthLargest(k, pos.right());
+}
+
+std::optional<int> kthLargest(unsigned k, BST<int, bool> const &bst) {
+  return kthLargest(k, bst.root());
+}
+
+// дясно свиване на дърво
+template<typename T, typename U>
+U foldr(std::function<U(T,U)> const &op, U nv, typename BinaryTree<T>::position pos) {
+  if (!pos.valid())
+    return nv;
+
+  U rres = op(*pos, foldr(op, nv, pos.right()));
+
+  return foldr(op, rres, pos.left());
+}
+
+template<typename T, typename U>
+U foldr(std::function<U(T, U)> const &op, U nv, BinaryTree<T> const &tree) {
+  return foldr(op, nv, tree.root());
+}
+
+// сума на всички елементи в дървото, които са по-малки или равни
+// на k-тия по големина елемент в дървото. макар че в нашето дърво
+// не позволяваме да имаме повторения, казахме, че ако има такива,
+// също бихме искали да ги добавим в сумата, така че при достигане
+// на k-тия по големина елемент, искаме да обходим и дясното му поддърво,
+// понеже сме приели, че ако имаме повторения на възел x, то те се намират
+// в дясното му поддърво. тъй като нямаме гаранция за разположението на тези
+// повторения в дясното поддърво, трябва да го обходим цялото и да сумираме
+// всички елементи, равни на стойността във възела x. понеже знаем какво е
+// дясно свиване на дърво от курса по ФП, решихме да сме готини и да
+// използваме функция от по-висок ред за тези повторения B)
+int sumKthLargest(unsigned &k, BST<int, bool>::position pos) {
+  if (!pos.valid() || k == 0)
+    return 0;
+
+  int lres = sumKthLargest(k, pos.left());
+
+  // трябваше да имаме някакъв начин да знаем дали
+  // сме получили резултат от лявото поддърво.
+  // това е аналогично на проверката,
+  // дали резултатът std::optional<V>
+  // при kthLargest е nullopt или съдържа някаква стойност.
+  // без тази проверка unsigned стойността ставаше "отрицателна",
+  // т.е. прехвърляхме стойността до UINT_MAX, и сумирахме
+  // всички възли
+  if (k == 0) return lres;
+
+  k--;
+  int x = (*pos).first;
+  lres += x;
+
+  if (k == 0) {
+    // [x] е capture клауза - т.е. "прихващаме" променливи,
+    // които са външни за ламбда функцията, в случая променливата x.
+    // това е необходимо, защото иначе x няма да е видима в самата функция,
+    // а очевидно ни е необходима, за да правим сравненията.
+    // нещо, което пропуснах да кажа на семинара, е, че тъй като 
+    // ни е нужна capture клауза, ЗАДЪЛЖИТЕЛНО трябва 
+    // foldr да приема std::function<тип>,
+    // а не просто - функционален указател
+    return foldr<Pair<int, bool>, int>([x](Pair<int, bool> y, int acc)
+                    {
+                      // pattern-matching, подобен на (z, _) = y
+                      // за някаква наредена двойка y :: (a,b)
+                      // в Haskell. технически в случая нямаме нужда от
+                      // const &, може просто auto [z, _] = y,
+                      // тъй като знаем големините на int и bool
+                      // и подаването по референция е излишно.
+                      // но в общия случай за произволни типове
+                      // auto const & е полезно.
+                      // "_" тук обозначава име на анонимна променлива,
+                      // подобно на Haskell
+                      auto const &[z, _] = y;
+                      if (z == x) {
+                        return z + acc;
+                      }
+                      else {
+                        return acc;
+                      }
+                  }
+                  , lres, pos.right());
+  }
+
+  return lres + sumKthLargest(k, pos.right());
+}
+
+int sumKthLargest(unsigned k, BST<int, bool> const &bst) {
+  return sumKthLargest(k, bst.root());
+}
 
 template<typename K, typename V>
 using BSTUtil = BinaryTreeUtil<Pair<K, V>, BSTU>;
@@ -206,6 +320,23 @@ int main() {
   );
 
   BSTUtil<int, std::string>::serialise(bst5);
+
+  BST<int, bool> bst6;
+  bst6.insert(8, true);
+  bst6.insert(11, true);
+  bst6.insert(28, true);
+  bst6.insert(7, true);
+
+  std::optional<int> res = kthLargest(5, bst6);
+  if (res.has_value()) {
+    std::cout << res.value() << '\n';
+  }
+  else {
+    std::cout << "no element at index " << 5 << '\n';
+  }
+
+  std::cout << sumKthLargest(1, bst6) << '\n';
+  std::cout << sumKthLargest(3, bst6) << '\n';
 
   return 0;
 }
