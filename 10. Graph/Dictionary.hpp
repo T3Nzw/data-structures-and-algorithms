@@ -21,10 +21,12 @@ public:
   iterator end() const { return Iterator(); }
 
   void insert(K const &key, V const &value) {
+    m_size++;
     tree.insert(key, value);
   }
 
   void remove(K const &key) {
+    if (lookup(key).has_value()) m_size--;
     tree.remove(key);
   }
 
@@ -125,6 +127,12 @@ private:
       return *this;
     }
 
+    Iterator operator++(int) {
+      Iterator cpy = *this;
+      ++*this;
+      return cpy;
+    }
+
   private:
     static void makeStack(position pos, std::stack<position> &stack) {
       if (!pos.valid())
@@ -141,6 +149,7 @@ private:
 
 private:
   AVLTree<K, V> tree;
+  size_t m_size=0;
 };
 
 #endif // __DICTIONARY_HPP

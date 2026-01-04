@@ -70,5 +70,19 @@ int main() {
 
   AVLUtil<int, int>::serialise(avl2);
 
+  AVLTree<int, bool> avl3;
+
+  avl3.insert(5, false);
+  avl3.insert(3, false);
+  avl3.insert(7, false);
+
+  avl3.remove(3);
+
+  std::cout << (avl3 == avl3) << '\n';
+
+  AVLTree<int, bool> avl4 = avl3;
+
+  std::cout << (avl3 == avl4) << '\n';
+
   return 0;
 }

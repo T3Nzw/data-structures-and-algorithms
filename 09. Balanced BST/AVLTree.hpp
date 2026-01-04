@@ -6,6 +6,26 @@
 #include <stdexcept>
 #include <optional>
 
+template<typename K, typename V> class AVLTree;
+
+// забележете, че няма да е коректно да overload-нем оператор ==
+// за позиции, понеже вече сме го направили в класа за позиция
+template<typename K, typename V>
+inline bool equal(typename AVLTree<K, V>::position p1, typename AVLTree<K, V>::position p2) {
+  return !p1.valid() && !p2.valid()
+      ||
+         p1.valid() && p2.valid()
+           && p1.key() == p2.key()
+           && p1.value() == p2.value()
+             && equal<K, V>(p1.left(), p2.left())
+             && equal<K, V>(p1.right(), p2.right());
+}
+
+template<typename K, typename V>
+inline bool operator==(AVLTree<K, V> const &t1, AVLTree<K, V> const &t2) {
+  return equal<K, V>(t1.root(), t2.root());
+}
+
 template<typename K, typename V>
 class AVLTree {
   class Position;
