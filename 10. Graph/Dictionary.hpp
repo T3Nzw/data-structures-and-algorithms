@@ -20,6 +20,17 @@ public:
   iterator end() { return Iterator(); }
   iterator end() const { return Iterator(); }
 
+  bool empty() const { return tree.empty(); }
+
+  iterator find(K const &key) const {
+    iterator iter = begin();
+
+    while (iter != end() && iter.key() != key)
+      ++iter;
+
+    return iter;
+  }
+
   void insert(K const &key, V const &value) {
     m_size++;
     tree.insert(key, value);
