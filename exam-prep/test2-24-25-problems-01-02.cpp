@@ -125,7 +125,7 @@ bool areAnagrams(hist const &h1, hist const &h2) {
 
   for (auto const &[key, value] : h1) {
 
-    if (h2.find(key) != h2.end())
+    if (h2.find(key) == h2.end())
       return false;
 
     if (h2.at(key) != value)
